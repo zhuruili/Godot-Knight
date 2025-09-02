@@ -1,11 +1,13 @@
 # Godot Knight
 
+![godot](https://img.shields.io/badge/Godot-4\.4\.1-478CBF?logo=godot-engine&logoColor=white)
+
 Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小游戏
 
-希望能通过记录开发过程来激励自己跟进教程的学习
+希望能通过记录开发过程来激励自己跟进教程的学习，本仓库仅包含制作游戏需要的代码文件，游戏本体如果我制作完成了可能会发布在release中
 
 > [!Note]
-> Godot版本说明：原教程使用的是Godot3.3.3，这里我使用的版本是Godot4.4.1
+> Godot版本说明：原教程使用的是Godot3.3.3，这里我使用的版本是Godot4.4.1  
 > 游戏资源说明：由于我不是项目的原作者，制作游戏所用到的资源我不敢擅自搬运，如果你对此感兴趣可以查看文档底部的原教程链接获取制作游戏所需的资源
 
 ## 完成进度
