@@ -16,7 +16,7 @@ Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小�
 
 - [X] [Chapter1](Docs/Chapter1.md)：基础地图制作
 - [X] [Chapter2](Docs/Chapter2.md)：小骑士基础移动
-- [ ] 小骑士冲刺、二段跳
+- [X] [Chapter3](Docs/Chapter3.md)：小骑士冲刺、二段跳
 - [ ] 小骑士攻击、黑冲
 
 ## 参考资料
