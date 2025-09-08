@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-enum State {NORMAL, DASH}
+enum State {NORMAL, DASH, ATTACK, ATTACK_UP, ATTACK_DOWN}
 
 var currentState = State.NORMAL
 var isStateNew = true
@@ -15,6 +15,7 @@ var maxDashSpeed = 400
 var canDash = true
 var canDoubleJump = true
 @export var isDoubleJumping = false
+var attack_index = 0
 
 func _ready() -> void:
 	pass
@@ -25,6 +26,12 @@ func _process(delta: float) -> void:
 			process_normal(delta)
 		State.DASH:
 			process_dash(delta)
+		State.ATTACK:
+			process_attack(delta)
+		State.ATTACK_UP:
+			process_attack_up(delta)
+		State.ATTACK_DOWN:
+			process_attack_down(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -34,7 +41,7 @@ func change_state(newState):
 func get_movement_vector():
 	var moveVector = Vector2.ZERO
 	moveVector.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	moveVector.y = -1 if Input.is_action_just_pressed("jump") else  0
+	moveVector.y = -1 if Input.is_action_just_pressed("jump") else 0
 	return moveVector
 
 func update_animation():
@@ -54,8 +61,17 @@ func update_animation():
 
 func turn_direction():
 	var moveVector = get_movement_vector()
-	if moveVector.x !=0:
+	if moveVector.x != 0:
 		$SpriteArea.scale.x = 1 if moveVector.x > 0 else -1
+
+func apply_gravity_movement(delta):
+	var moveVector = get_movement_vector()
+	velocity.x += moveVector.x * horizontalAcceleration * delta
+	velocity.x = clamp(velocity.x, -maxHorizontalSpeed, maxHorizontalSpeed)
+	if moveVector.x == 0:
+		velocity.x = lerp(0.0, velocity.x, pow(2, -50 * delta))
+	velocity.y += gravity * delta
+	move_and_slide()
 
 func process_normal(delta: float) -> void:
 	var moveVector = get_movement_vector()
@@ -74,7 +90,7 @@ func process_normal(delta: float) -> void:
 	if velocity.y < 0 and !Input.is_action_pressed("jump"):
 		velocity.y += jumpHigher * delta * gravity
 	
-	velocity.y += gravity * delta  # 物理帧率默认60，所以每次增量算出来约为10
+	velocity.y += gravity * delta # 物理帧率默认60，所以每次增量算出来约为10
 	
 	move_and_slide()
 	update_animation()
@@ -86,9 +102,17 @@ func process_normal(delta: float) -> void:
 	
 	if Input.is_action_just_pressed("dash") and canDash == true:
 		call_deferred("change_state", State.DASH)
+	if Input.is_action_just_pressed("attack") and $AttackTimer.is_stopped():
+		call_deferred("change_state", State.ATTACK)
+	if Input.is_action_just_pressed("attack") and Input.get_action_strength("move_up") and $AttackTimer.is_stopped():
+		call_deferred("change_state", State.ATTACK_UP)
+	if Input.is_action_just_pressed("attack") and Input.get_action_strength("move_down") and !is_on_floor() and $AttackTimer.is_stopped():
+		call_deferred("change_state", State.ATTACK_DOWN)
 
 func process_dash(delta):
 	if isStateNew:
+		var hasBlackDash = $BlackDash.hasBlackDash
+		turn_direction()
 		canDash = false
 		var moveVector = get_movement_vector()
 		var velocityMod = 1
@@ -98,8 +122,40 @@ func process_dash(delta):
 			velocityMod = 1 if $SpriteArea.scale.x == 1 else -1
 		velocity.x = velocityMod * maxDashSpeed
 		velocity.y = 0
-		$AnimationPlayer.play("冲刺")
-	velocity.x = lerp(0.0, velocity.x, pow(2,-6 * delta))
+		if hasBlackDash == true:
+			$BlackDash.spawn_blackdash()
+			$AnimationPlayer.play("黑冲")
+		else:
+			$AnimationPlayer.play("冲刺")
+	velocity.x = lerp(0.0, velocity.x, pow(2, -6 * delta))
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
 		call_deferred("change_state", State.NORMAL)
+		
+func process_attack(delta):
+	if isStateNew:
+		if attack_index == 0:
+			$AnimationPlayer.play("横劈1")
+		else:
+			$AnimationPlayer.play("横劈2")
+	if !$AnimationPlayer.is_playing():
+		$AttackTimer.start()
+		attack_index = 1 - attack_index
+		call_deferred("change_state", State.NORMAL)
+	apply_gravity_movement(delta)
+
+func process_attack_up(delta):
+	if isStateNew:
+		$AnimationPlayer.play("上劈")
+	if !$AnimationPlayer.is_playing():
+		$AttackTimer.start()
+		call_deferred("change_state", State.NORMAL)
+	apply_gravity_movement(delta)
+
+func process_attack_down(delta):
+	if isStateNew:
+		$AnimationPlayer.play("下劈")
+	if !$AnimationPlayer.is_playing():
+		$AttackTimer.start()
+		call_deferred("change_state", State.NORMAL)
+	apply_gravity_movement(delta)
