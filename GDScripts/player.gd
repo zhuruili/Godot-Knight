@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-enum State {NORMAL, DASH, ATTACK, ATTACK_UP, ATTACK_DOWN}
+enum State {NORMAL, DASH, ATTACK, ATTACK_UP, ATTACK_DOWN, ATTACK_JUMP}
 
 var currentState = State.NORMAL
 var isStateNew = true
@@ -32,6 +32,8 @@ func _process(delta: float) -> void:
 			process_attack_up(delta)
 		State.ATTACK_DOWN:
 			process_attack_down(delta)
+		State.ATTACK_JUMP:
+			process_attack_jump(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -63,6 +65,12 @@ func turn_direction():
 	var moveVector = get_movement_vector()
 	if moveVector.x != 0:
 		$SpriteArea.scale.x = 1 if moveVector.x > 0 else -1
+		$HurtboxArea.scale.x = 1 if moveVector.x > 0 else -1
+		$Attack_1.scale.x = 1 if moveVector.x > 0 else -1
+		$Attack_2.scale.x = 1 if moveVector.x > 0 else -1
+		$Attack_Up.scale.x = 1 if moveVector.x > 0 else -1
+		$Attack_Down.scale.x = 1 if moveVector.x > 0 else -1
+		$CollisionPolygon2D.scale.x = 1 if moveVector.x > 0 else -1
 
 func apply_gravity_movement(delta):
 	var moveVector = get_movement_vector()
@@ -159,3 +167,39 @@ func process_attack_down(delta):
 		$AttackTimer.start()
 		call_deferred("change_state", State.NORMAL)
 	apply_gravity_movement(delta)
+
+func process_attack_jump(delta):
+	if isStateNew:
+		canDash = true
+		canDoubleJump = true
+		velocity.x = 0
+		velocity.y = -260
+		$AnimationPlayer.play("下劈")
+	if velocity.y >= -130:
+		call_deferred("change_state", State.NORMAL)
+	if Input.is_action_just_pressed("dash") and canDash == true:
+		call_deferred("change_state", State.DASH)
+	apply_gravity_movement(delta)
+
+
+func _on_hurtbox_area_area_entered(area: Area2D) -> void:
+	print("受伤")
+
+
+func _on_attack_1_area_entered(area: Area2D) -> void:
+	if $SpriteArea.scale.x == 1:
+		global_position.x -= 5
+	else:
+		global_position.x += 5
+
+func _on_attack_2_area_entered(area: Area2D) -> void:
+	if $SpriteArea.scale.x == 1:
+		global_position.x -= 5
+	else:
+		global_position.x += 5
+
+func _on_attack_up_area_entered(area: Area2D) -> void:
+	pass # Replace with function body.
+
+func _on_attack_down_area_entered(area: Area2D) -> void:
+	call_deferred("change_state", State.ATTACK_JUMP)
