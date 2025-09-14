@@ -1,6 +1,7 @@
 # Godot Knight
 
 ![godot](https://img.shields.io/badge/Godot-4\.4\.1-478CBF?logo=godot-engine&logoColor=white)
+![gdscript](https://img.shields.io/badge/GDScript-4\.x-478CBF?logo=godot-engine&logoColor=white)
 
 Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小游戏
 
@@ -12,14 +13,15 @@ Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小�
 
 ## 完成进度
 
-游戏制作过程中留下的简易笔记在`Docs`文件夹下
+游戏制作过程中留下的简易笔记在`Docs`文件夹下，仅记录一些关键知识点
 
 - [X] [Chapter1](Docs/Chapter1.md)：基础地图制作
 - [X] [Chapter2](Docs/Chapter2.md)：小骑士基础移动
 - [X] [Chapter3](Docs/Chapter3.md)：小骑士冲刺、二段跳
 - [X] [Chapter4](Docs/Chapter4.md)：小骑士攻击、黑冲
 - [X] [Chapter5](Docs/Chapter5.md)：小骑士动作碰撞体
-- [ ] 小骑士受伤状态
+- [X] 小骑士受伤状态
+- [ ] 战斗基础场景搭建
 
 ## 参考资料
 
