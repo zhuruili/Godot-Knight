@@ -1,16 +1,19 @@
 extends CharacterBody2D
 
-enum State {READY, IDLE, HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI}
+enum State {READY, IDLE, HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI,
+			MOVE, JUMP, FALL}
 
 var currentState = State.READY
 var isStateNew = true
 
+var playerPosition = Vector2.ZERO
 var gravity = 1000
 
 func _ready() -> void:
 	pass
 
 func _process(delta: float) -> void:
+	match_player_position()
 	match currentState:
 		State.READY:
 			process_ready(delta)
@@ -24,6 +27,12 @@ func _process(delta: float) -> void:
 			process_shangtiao(delta)
 		State.SHANGTIAO_ZHUNBEI:
 			process_shangtiao_zhunbei(delta)
+		State.MOVE:
+			process_move(delta)
+		State.JUMP:
+			process_jump(delta)
+		State.FALL:
+			process_fall(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -31,16 +40,20 @@ func change_state(newState):
 	isStateNew = true
 
 func turn_direction():
-	var playerPosition = get_node("/root/MainScene/Player").global_position
 	$SpriteArea.scale.x = 1 if playerPosition.x < global_position.x else -1
 	$HurtboxArea.scale.x = 1 if playerPosition.x < global_position.x else -1
 	$BodyHitboxArea.scale.x = 1 if playerPosition.x < global_position.x else -1
 	$DaoguangHitboxArea.scale.x = 1 if playerPosition.x < global_position.x else -1
 	$CollisionPolygon2D.scale.x = 1 if playerPosition.x < global_position.x else -1
 
+func match_player_position():
+	var players = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		var player = players[0]
+		playerPosition = player.global_position
+
 func process_ready(delta):
 	turn_direction()
-	var playerPosition = get_node("/root/MainScene/Player").global_position
 	$AnimationPlayer.play("站立")
 	if playerPosition.x < -250:
 		var door = get_node("/root/MainScene/Doors/Door")
@@ -55,7 +68,13 @@ func process_idle(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
-		call_deferred("change_state", State.HUIKAN_ZHUNBEI)
+		if abs(playerPosition.x - global_position.x) < 80:
+			call_deferred("change_state", State.HUIKAN_ZHUNBEI)
+		else:
+			if randf() > 0.5:
+				call_deferred("change_state", State.MOVE)
+			else:
+				call_deferred("change_state", State.JUMP)
 
 func process_huikan(delta):
 	if isStateNew:
@@ -82,7 +101,7 @@ func process_shangtiao(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
-		call_deferred("change_state", State.IDLE)
+		call_deferred("change_state", State.FALL)
 
 func process_shangtiao_zhunbei(delta):
 	if isStateNew:
@@ -90,6 +109,39 @@ func process_shangtiao_zhunbei(delta):
 		$AnimationPlayer.play("上挑准备")
 	if !$AnimationPlayer.is_playing():
 		call_deferred("change_state", State.SHANGTIAO)
+
+func process_move(delta):
+	turn_direction()
+	if isStateNew:
+		if playerPosition.x > global_position.x:
+			velocity.x = 80
+		else:
+			velocity.x = -80
+		velocity.y = 0
+		$AnimationPlayer.play("移动")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if abs(playerPosition.x - global_position.x) < 80:
+		call_deferred("change_state", State.HUIKAN_ZHUNBEI)
+
+func process_jump(delta):
+	if isStateNew:
+		velocity.x = playerPosition.x - global_position.x
+		velocity.y = -400
+		$AnimationPlayer.play("跳跃")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if velocity.y > 0:
+		call_deferred("change_state", State.FALL)
+
+func process_fall(delta):
+	if isStateNew:
+		$AnimationPlayer.play("下落")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if is_on_floor():
+		velocity = Vector2.ZERO
+		call_deferred("change_state", State.IDLE)
 
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
