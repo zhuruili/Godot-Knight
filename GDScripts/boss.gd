@@ -3,7 +3,8 @@ extends CharacterBody2D
 enum State {READY, IDLE,
 			HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI,
 			MOVE, JUMP, FALL,
-			JUMP_2, XIACHUO_ZHUNBEI, XIACHUO, XIACHUO_JIESHU}
+			JUMP_2, XIACHUO_ZHUNBEI, XIACHUO, XIACHUO_JIESHU,
+			BACK_JUMP, BACK_FALL}
 
 var currentState = State.READY
 var isStateNew = true
@@ -43,6 +44,10 @@ func _process(delta: float) -> void:
 			process_xiachuo(delta)
 		State.XIACHUO_JIESHU:
 			process_xiachuo_jieshu(delta)
+		State.BACK_JUMP:
+			process_back_jump(delta)
+		State.BACK_FALL:
+			process_back_fall(delta)
 		
 	isStateNew = false
 
@@ -79,7 +84,7 @@ func process_idle(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
-		if randf() < 0.7:
+		if randf() < 0.5:
 			if abs(playerPosition.x - global_position.x) < 80:
 				call_deferred("change_state", State.HUIKAN_ZHUNBEI)
 			else:
@@ -88,7 +93,10 @@ func process_idle(delta):
 				else:
 					call_deferred("change_state", State.JUMP)
 		else:
-			call_deferred("change_state", State.JUMP_2)
+			if randf() < 0.5:
+				call_deferred("change_state", State.JUMP_2)
+			else:
+				call_deferred("change_state", State.BACK_JUMP)
 
 func process_huikan(delta):
 	if isStateNew:
@@ -190,6 +198,40 @@ func process_xiachuo_jieshu(delta):
 		velocity = Vector2.ZERO
 		$AnimationPlayer.play("下戳结束")
 	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.IDLE)
+
+
+func process_back_jump(delta):
+	if isStateNew:
+		velocity.x = -500 - global_position.x if playerPosition.x > (-500 - 240) * 0.5 else -240 - global_position.x
+		velocity.y = -400
+		if velocity.x < 0 and $SpriteArea.scale.x == 1:
+			$AnimationPlayer.play("跳跃")
+		if velocity.x < 0 and $SpriteArea.scale.x == -1:
+			$AnimationPlayer.play("后跳")
+		if velocity.x > 0 and $SpriteArea.scale.x == 1:
+			$AnimationPlayer.play("后跳")
+		if velocity.x > 0 and $SpriteArea.scale.x == -1:
+			$AnimationPlayer.play("跳跃")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if velocity.y > 0:
+		call_deferred("change_state", State.BACK_FALL)
+
+func process_back_fall(delta):
+	if isStateNew:
+		if velocity.x < 0 and $SpriteArea.scale.x == 1:
+			$AnimationPlayer.play("下落")
+		if velocity.x < 0 and $SpriteArea.scale.x == -1:
+			$AnimationPlayer.play("后跳下落")
+		if velocity.x > 0 and $SpriteArea.scale.x == 1:
+			$AnimationPlayer.play("后跳下落")
+		if velocity.x > 0 and $SpriteArea.scale.x == -1:
+			$AnimationPlayer.play("下落")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if is_on_floor():
+		velocity = Vector2.ZERO
 		call_deferred("change_state", State.IDLE)
 
 
