@@ -1,7 +1,9 @@
 extends CharacterBody2D
 
-enum State {READY, IDLE, HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI,
-			MOVE, JUMP, FALL}
+enum State {READY, IDLE,
+			HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI,
+			MOVE, JUMP, FALL,
+			JUMP_2, XIACHUO_ZHUNBEI, XIACHUO, XIACHUO_JIESHU}
 
 var currentState = State.READY
 var isStateNew = true
@@ -33,6 +35,15 @@ func _process(delta: float) -> void:
 			process_jump(delta)
 		State.FALL:
 			process_fall(delta)
+		State.JUMP_2:
+			process_jump_2(delta)
+		State.XIACHUO_ZHUNBEI:
+			process_xiachuo_zhunbei(delta)
+		State.XIACHUO:
+			process_xiachuo(delta)
+		State.XIACHUO_JIESHU:
+			process_xiachuo_jieshu(delta)
+		
 	isStateNew = false
 
 func change_state(newState):
@@ -68,13 +79,16 @@ func process_idle(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
-		if abs(playerPosition.x - global_position.x) < 80:
-			call_deferred("change_state", State.HUIKAN_ZHUNBEI)
-		else:
-			if randf() > 0.5:
-				call_deferred("change_state", State.MOVE)
+		if randf() < 0.7:
+			if abs(playerPosition.x - global_position.x) < 80:
+				call_deferred("change_state", State.HUIKAN_ZHUNBEI)
 			else:
-				call_deferred("change_state", State.JUMP)
+				if randf() > 0.5:
+					call_deferred("change_state", State.MOVE)
+				else:
+					call_deferred("change_state", State.JUMP)
+		else:
+			call_deferred("change_state", State.JUMP_2)
 
 func process_huikan(delta):
 	if isStateNew:
@@ -142,6 +156,42 @@ func process_fall(delta):
 	if is_on_floor():
 		velocity = Vector2.ZERO
 		call_deferred("change_state", State.IDLE)
+
+
+func process_jump_2(delta):
+	if isStateNew:
+		velocity.x = (playerPosition.x - global_position.x) * 2
+		velocity.y = -400
+		$AnimationPlayer.play("跳跃")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if velocity.y > 0:
+		call_deferred("change_state", State.XIACHUO_ZHUNBEI)
+
+func process_xiachuo_zhunbei(delta):
+	if isStateNew:
+		velocity = Vector2.ZERO
+		$AnimationPlayer.play("下戳准备")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.XIACHUO)
+
+func process_xiachuo(delta):
+	if isStateNew:
+		$AnimationPlayer.play("下戳")
+	velocity.y += 100
+	move_and_slide()
+	if is_on_floor():
+		var guci_spawner = get_node("/root/MainScene/Enemy/Guci_Spawner")
+		guci_spawner.spawn_guci()
+		call_deferred("change_state", State.XIACHUO_JIESHU)
+
+func process_xiachuo_jieshu(delta):
+	if isStateNew:
+		velocity = Vector2.ZERO
+		$AnimationPlayer.play("下戳结束")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.IDLE)
+
 
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
