@@ -4,7 +4,9 @@ enum State {READY, IDLE,
 			HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI,
 			MOVE, JUMP, FALL,
 			JUMP_2, XIACHUO_ZHUNBEI, XIACHUO, XIACHUO_JIESHU,
-			BACK_JUMP, BACK_FALL}
+			BACK_JUMP, BACK_FALL,
+			BAIBO,
+			CHONGCI_ZHUNBEI, CHONGCI, CHONGCI_TINGXIA}
 
 var currentState = State.READY
 var isStateNew = true
@@ -48,7 +50,14 @@ func _process(delta: float) -> void:
 			process_back_jump(delta)
 		State.BACK_FALL:
 			process_back_fall(delta)
-		
+		State.BAIBO:
+			process_baibo(delta)
+		State.CHONGCI_ZHUNBEI:
+			process_chongci_zhunbei(delta)
+		State.CHONGCI:
+			process_chongci(delta)
+		State.CHONGCI_TINGXIA:
+			process_chongci_tingxia(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -84,7 +93,7 @@ func process_idle(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
-		if randf() < 0.5:
+		if randf() > 0.5:
 			if abs(playerPosition.x - global_position.x) < 80:
 				call_deferred("change_state", State.HUIKAN_ZHUNBEI)
 			else:
@@ -93,7 +102,7 @@ func process_idle(delta):
 				else:
 					call_deferred("change_state", State.JUMP)
 		else:
-			if randf() < 0.5:
+			if randf() > 0.5:
 				call_deferred("change_state", State.JUMP_2)
 			else:
 				call_deferred("change_state", State.BACK_JUMP)
@@ -232,8 +241,56 @@ func process_back_fall(delta):
 	move_and_slide()
 	if is_on_floor():
 		velocity = Vector2.ZERO
+		if randf() > 0.5:
+			call_deferred("change_state", State.BAIBO)
+		else:
+			call_deferred("change_state", State.CHONGCI_ZHUNBEI)
+
+
+func process_baibo(delta):
+	if isStateNew:
+		turn_direction()
+		velocity = Vector2.ZERO
+		$AnimationPlayer.play("白波释放")
+	if !$AnimationPlayer.is_playing():
 		call_deferred("change_state", State.IDLE)
 
+func spawn_baibo(delta):
+	var baibo_spawner = get_node("/root/MainScene/Enemy/Baibo_Spawner")
+	if $SpriteArea.scale.x == 1:
+		baibo_spawner.spawn_baibo_left()
+	else:
+		baibo_spawner.spawn_baibo_right()
+
+
+func process_chongci_zhunbei(delta):
+	if isStateNew:
+		turn_direction()
+		velocity = Vector2.ZERO
+		$AnimationPlayer.play("冲刺准备")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.CHONGCI)
+
+func process_chongci(delta):
+	if isStateNew:
+		velocity.x = -400 if $SpriteArea.scale.x == 1 else 400
+		velocity.y = 0
+		$AnimationPlayer.play("冲刺")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if $SpriteArea.scale.x == 1 and global_position.x < -500:
+		call_deferred("change_state", State.CHONGCI_TINGXIA)
+	if $SpriteArea.scale.x == -1 and global_position.x > -240:
+		call_deferred("change_state", State.CHONGCI_TINGXIA)
+
+func process_chongci_tingxia(delta):
+	if isStateNew:
+		velocity.x = lerp(0.0, velocity.x, pow(2, -10 * delta))
+		$AnimationPlayer.play("冲刺停下")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.IDLE)
 
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
