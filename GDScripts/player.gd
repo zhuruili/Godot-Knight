@@ -191,6 +191,8 @@ func process_attack_jump(delta):
 
 
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
+	$"/root/PlayerHealthBar".PlayerHealthBar -= 1
+	$"/root/PlayerHealthBar".refresh_player_health_bar()
 	if area.global_position.x > global_position.x:
 		hurt_direction = "left"
 	else:
@@ -229,19 +231,27 @@ func process_hurt(delta):
 	
 
 func _on_attack_1_area_entered(area: Area2D) -> void:
+	$"/root/PlayerSoul".PlayerSoul += 1
+	$"/root/PlayerSoul".refresh_player_soul()
 	if $SpriteArea.scale.x == 1:
 		global_position.x -= 5
 	else:
 		global_position.x += 5
 
 func _on_attack_2_area_entered(area: Area2D) -> void:
+	$"/root/PlayerSoul".PlayerSoul += 1
+	$"/root/PlayerSoul".refresh_player_soul()
 	if $SpriteArea.scale.x == 1:
 		global_position.x -= 5
 	else:
 		global_position.x += 5
 
 func _on_attack_up_area_entered(area: Area2D) -> void:
+	$"/root/PlayerSoul".PlayerSoul += 1
+	$"/root/PlayerSoul".refresh_player_soul()
 	pass # Replace with function body.
 
 func _on_attack_down_area_entered(area: Area2D) -> void:
+	$"/root/PlayerSoul".PlayerSoul += 1
+	$"/root/PlayerSoul".refresh_player_soul()
 	call_deferred("change_state", State.ATTACK_JUMP)
