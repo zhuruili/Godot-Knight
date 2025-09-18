@@ -2,7 +2,8 @@ extends CharacterBody2D
 
 enum State {NORMAL, DASH,
 ATTACK, ATTACK_UP, ATTACK_DOWN, ATTACK_JUMP,
-HURT}
+HURT, DIE_1, DIE_2,
+HEAL}
 
 var currentState = State.NORMAL
 var isStateNew = true
@@ -39,6 +40,12 @@ func _process(delta: float) -> void:
 			process_attack_jump(delta)
 		State.HURT:
 			process_hurt(delta)
+		State.DIE_1:
+			process_die_1(delta)
+		State.DIE_2:
+			process_die_2(delta)
+		State.HEAL:
+			process_heal(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -62,8 +69,12 @@ func update_animation():
 			if velocity.y > 0:
 				$AnimationPlayer.play("下落")
 	elif moveVector.x != 0:
+		if Input.is_action_pressed("heal") and $"/root/PlayerSoul".PlayerSoul >= 3:
+			call_deferred("change_state", State.HEAL)
 		$AnimationPlayer.play("移动")
 	else:
+		if Input.is_action_pressed("heal") and $"/root/PlayerSoul".PlayerSoul >= 3:
+			call_deferred("change_state", State.HEAL)
 		$AnimationPlayer.play("站立")
 
 
@@ -197,7 +208,10 @@ func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 		hurt_direction = "left"
 	else:
 		hurt_direction = "right"
-	call_deferred("change_state", State.HURT)
+	if $"/root/PlayerHealthBar".PlayerHealthBar <= 0:
+		call_deferred("change_state", State.DIE_1)
+	else:
+		call_deferred("change_state", State.HURT)
 
 func Invincible():
 	$HurtboxArea/Hurtbox.set_deferred("disabled", true)
@@ -228,7 +242,30 @@ func process_hurt(delta):
 	move_and_slide()
 	if !$AnimationPlayer.is_playing():
 		call_deferred("change_state", State.NORMAL)
-	
+
+func process_die_1(delta):
+	if isStateNew:
+		$HurtboxArea/Hurtbox.disabled = true
+		$AnimationPlayer.play("死亡1")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.DIE_2)
+
+func process_die_2(delta):
+	if isStateNew:
+		$AnimationPlayer.play("死亡2")
+
+func process_heal(delta):
+	if isStateNew:
+		$AnimationPlayer.play("回血")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.NORMAL)
+
+func heal():
+	$"/root/PlayerSoul".PlayerSoul -= 3
+	$"/root/PlayerSoul".refresh_player_soul()
+	$"/root/PlayerHealthBar".PlayerHealthBar += 1
+	$"/root/PlayerHealthBar".refresh_player_health_bar()
+
 
 func _on_attack_1_area_entered(area: Area2D) -> void:
 	$"/root/PlayerSoul".PlayerSoul += 1
