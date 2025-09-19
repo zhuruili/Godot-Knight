@@ -6,16 +6,22 @@ enum State {READY, IDLE,
 			JUMP_2, XIACHUO_ZHUNBEI, XIACHUO, XIACHUO_JIESHU,
 			BACK_JUMP, BACK_FALL,
 			BAIBO,
-			CHONGCI_ZHUNBEI, CHONGCI, CHONGCI_TINGXIA}
+			CHONGCI_ZHUNBEI, CHONGCI, CHONGCI_TINGXIA,
+			HURT, DIE_1, DIE_2}
 
 var currentState = State.READY
 var isStateNew = true
 
 var playerPosition = Vector2.ZERO
 var gravity = 1000
+var BossHealth = 1000
 
 func _ready() -> void:
-	pass
+	global_position.x = -450
+	global_position.y = 0
+	$HurtboxArea/Hurtbox.disabled = false
+	$BodyHitboxArea/BodyHitbox.disabled = false
+	$DaoguangHitboxArea/DaoguangHitbox.disabled = false
 
 func _process(delta: float) -> void:
 	match_player_position()
@@ -58,6 +64,12 @@ func _process(delta: float) -> void:
 			process_chongci(delta)
 		State.CHONGCI_TINGXIA:
 			process_chongci_tingxia(delta)
+		State.HURT:
+			process_hurt(delta)
+		State.DIE_1:
+			process_die_1(delta)
+		State.DIE_2:
+			process_die_2(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -292,9 +304,94 @@ func process_chongci_tingxia(delta):
 	if !$AnimationPlayer.is_playing():
 		call_deferred("change_state", State.IDLE)
 
+func process_hurt(delta):
+	if isStateNew:
+		turn_direction()
+		$AnimationPlayer.play("僵直")
+		velocity.x = 400 if $SpriteArea.scale.x == 1 else -400
+	velocity.x = lerp(0.0, velocity.x, pow(2, -10 * delta))
+	velocity.y += gravity * delta
+	move_and_slide()
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.IDLE)
+
+func process_die_1(delta):
+	if isStateNew:
+		$HurtboxArea/Hurtbox.disabled = true
+		$BodyHitboxArea/BodyHitbox.disabled = true
+		$DaoguangHitboxArea/DaoguangHitbox.disabled = true
+		turn_direction()
+		$AnimationPlayer.play("僵直")
+		velocity.x = 400 if $SpriteArea.scale.x == 1 else -400
+	velocity.x = lerp(0.0, velocity.x, pow(2, -10 * delta))
+	velocity.y += gravity * delta
+	move_and_slide()
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.DIE_2)
+
+func process_die_2(delta):
+	if isStateNew:
+		$AnimationPlayer.play("死亡")
+
+func door_open():
+	var door = get_node("/root/MainScene/Doors/Door")
+	door.open()
+
+
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
 	$SpriteArea/Sprite2D.use_parent_material = false
+	if BossHealth <= 1000 and BossHealth >= 750:
+		if area.name == "Attack_1":
+			BossHealth -= 13
+		if area.name == "Attack_2":
+			BossHealth -= 13
+		if area.name == "Attack_Up":
+			BossHealth -= 13
+		if area.name == "Attack_Down":
+			BossHealth -= 13
+		if BossHealth < 750: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
+			call_deferred("change_state", State.HURT)
+		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
+			call_deferred("change_state", State.DIE_1)
+	if BossHealth <= 750 and BossHealth >= 500:
+		if area.name == "Attack_1":
+			BossHealth -= 13
+		if area.name == "Attack_2":
+			BossHealth -= 13
+		if area.name == "Attack_Up":
+			BossHealth -= 13
+		if area.name == "Attack_Down":
+			BossHealth -= 13
+		if BossHealth < 500: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
+			call_deferred("change_state", State.HURT)
+		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
+			call_deferred("change_state", State.DIE_1)
+	if BossHealth <= 500 and BossHealth >= 250:
+		if area.name == "Attack_1":
+			BossHealth -= 13
+		if area.name == "Attack_2":
+			BossHealth -= 13
+		if area.name == "Attack_Up":
+			BossHealth -= 13
+		if area.name == "Attack_Down":
+			BossHealth -= 13
+		if BossHealth < 250: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
+			call_deferred("change_state", State.HURT)
+		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
+			call_deferred("change_state", State.DIE_1)
+	if BossHealth <= 250 and BossHealth >= 0:
+		if area.name == "Attack_1":
+			BossHealth -= 13
+		if area.name == "Attack_2":
+			BossHealth -= 13
+		if area.name == "Attack_Up":
+			BossHealth -= 13
+		if area.name == "Attack_Down":
+			BossHealth -= 13
+		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
+			call_deferred("change_state", State.DIE_1)
+	print(BossHealth)
 
 
 func _on_materia_timer_timeout() -> void:
