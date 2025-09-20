@@ -4,7 +4,7 @@ enum State {NORMAL, DASH,
 ATTACK, ATTACK_UP, ATTACK_DOWN, ATTACK_JUMP,
 HURT, DIE_1, DIE_2,
 HEAL,
-HEIBO, SHANGHOU}
+HEIBO, SHANGHOU, XIAZA_XULI, XIAZA_GUOCHENG, XIAZA_LUODI}
 
 var currentState = State.NORMAL
 var isStateNew = true
@@ -51,6 +51,12 @@ func _process(delta: float) -> void:
 			process_heibo(delta)
 		State.SHANGHOU:
 			process_shanghou(delta)
+		State.XIAZA_XULI:
+			process_xiaza_xuli(delta)
+		State.XIAZA_GUOCHENG:
+			process_xiaza_guocheng(delta)
+		State.XIAZA_LUODI:
+			process_xiaza_luodi(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -142,6 +148,8 @@ func process_normal(delta: float) -> void:
 		call_deferred("change_state", State.HEIBO)
 	if Input.is_action_just_pressed("fashu") and Input.get_action_strength("move_up") and $"/root/PlayerSoul".PlayerSoul >= 3:
 		call_deferred("change_state", State.SHANGHOU)
+	if Input.is_action_just_pressed("fashu") and Input.get_action_strength("move_down") and $"/root/PlayerSoul".PlayerSoul >= 3 and !is_on_floor():
+		call_deferred("change_state", State.XIAZA_XULI)
 
 func process_dash(delta):
 	if isStateNew:
@@ -309,6 +317,41 @@ func spawn_shanghou(delta):
 	fashu_spawner.spawn_shanghou()
 
 
+func process_xiaza_xuli(delta):
+	if isStateNew:
+		$"/root/PlayerSoul".PlayerSoul -= 3
+		$"/root/PlayerSoul".refresh_player_soul()
+		velocity = Vector2.ZERO
+		$AnimationPlayer.play("下砸蓄力")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.XIAZA_GUOCHENG)
+
+func process_xiaza_guocheng(delta):
+	if isStateNew:
+		$HurtboxArea/Hurtbox.disabled = true
+		$AnimationPlayer.play("下砸下落过程")
+		velocity.y = 600
+	velocity.y += gravity * delta
+	move_and_slide()
+	if is_on_floor():
+		call_deferred("change_state", State.XIAZA_LUODI)
+
+func process_xiaza_luodi(delta):
+	if isStateNew:
+		$AnimationPlayer.play("下砸落地")
+		velocity = Vector2.ZERO
+	if !$AnimationPlayer.is_playing():
+		call_deferred("xiaza_wudi")
+		call_deferred("change_state", State.NORMAL)
+
+func spawn_xiaza(delta):
+	var fashu_spawner = get_node("/root/MainScene/Player/FashuSpawner")
+	fashu_spawner.spawn_xiaza()
+
+func xiaza_wudi():
+	$XiazaWudiTimer.start()
+
+
 func _on_attack_1_area_entered(area: Area2D) -> void:
 	$"/root/PlayerSoul".PlayerSoul += 1
 	$"/root/PlayerSoul".refresh_player_soul()
@@ -334,3 +377,7 @@ func _on_attack_down_area_entered(area: Area2D) -> void:
 	$"/root/PlayerSoul".PlayerSoul += 1
 	$"/root/PlayerSoul".refresh_player_soul()
 	call_deferred("change_state", State.ATTACK_JUMP)
+
+
+func _on_xiaza_wudi_timer_timeout() -> void:
+	$HurtboxArea/Hurtbox.disabled = false

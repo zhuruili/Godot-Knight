@@ -32,7 +32,7 @@ Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小�
 - [X] [Chapter15](Docs/Chapter15.md)：BOSS的僵直和死亡
 - [X] [Chapter16](Docs/Chapter16.md)：小骑士黑波
 - [X] [Chapter17](Docs/Chapter17.md)：小骑士上吼
-- [X] 小骑士下砸
+- [X] [Chapter18](Docs/Chapter18.md)：小骑士下砸
 - [ ] 震动与卡帧
 - [ ] 未完待续...
 
