@@ -294,6 +294,7 @@ func process_heibo(delta):
 		call_deferred("change_state", State.NORMAL)
 
 func spawn_heibo(delta):
+	$"/root/MainScene/GameCamera".camera_shake_small()
 	var fashu_spawner = get_node("/root/MainScene/Player/FashuSpawner")
 	if $SpriteArea.scale.x == 1:
 		fashu_spawner.spawn_heibo_right()
@@ -313,6 +314,7 @@ func process_shanghou(delta):
 		call_deferred("change_state", State.NORMAL)
 
 func spawn_shanghou(delta):
+	$"/root/MainScene/GameCamera".camera_shake_small()
 	var fashu_spawner = get_node("/root/MainScene/Player/FashuSpawner")
 	fashu_spawner.spawn_shanghou()
 
@@ -338,6 +340,7 @@ func process_xiaza_guocheng(delta):
 
 func process_xiaza_luodi(delta):
 	if isStateNew:
+		$"/root/MainScene/GameCamera".camera_shake_small()
 		$AnimationPlayer.play("下砸落地")
 		velocity = Vector2.ZERO
 	if !$AnimationPlayer.is_playing():

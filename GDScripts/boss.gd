@@ -210,6 +210,7 @@ func process_xiachuo(delta):
 	velocity.y += 100
 	move_and_slide()
 	if is_on_floor():
+		$"/root/MainScene/GameCamera".camera_shake_small()
 		var guci_spawner = get_node("/root/MainScene/Enemy/Guci_Spawner")
 		guci_spawner.spawn_guci()
 		call_deferred("change_state", State.XIACHUO_JIESHU)
@@ -306,6 +307,7 @@ func process_chongci_tingxia(delta):
 
 func process_hurt(delta):
 	if isStateNew:
+		$"/root/MainScene/GameCamera".enemy_rigidity()
 		turn_direction()
 		$AnimationPlayer.play("僵直")
 		velocity.x = 400 if $SpriteArea.scale.x == 1 else -400
@@ -317,6 +319,7 @@ func process_hurt(delta):
 
 func process_die_1(delta):
 	if isStateNew:
+		$"/root/MainScene/GameCamera".enemy_rigidity()
 		$HurtboxArea/Hurtbox.disabled = true
 		$BodyHitboxArea/BodyHitbox.disabled = true
 		$DaoguangHitboxArea/DaoguangHitbox.disabled = true
@@ -332,6 +335,9 @@ func process_die_1(delta):
 func process_die_2(delta):
 	if isStateNew:
 		$AnimationPlayer.play("死亡")
+
+func enemy_die_camera_shake():
+	$"/root/MainScene/GameCamera".enemy_die()
 
 func door_open():
 	var door = get_node("/root/MainScene/Doors/Door")
@@ -352,10 +358,14 @@ func deal_damage(health_upper_limit, health_lower_limit, area):
 			BossHealth -= 30
 		if area.name == "ShanghouHitboxArea":
 			BossHealth -= 20
-		if BossHealth < health_lower_limit: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
-			call_deferred("change_state", State.HURT)
+		if area.name == "XiazaHitboxArea":
+			BossHealth -= 30
+		if area.name == "XiazaHitboxArea2":
+			BossHealth -= 15
 		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
 			call_deferred("change_state", State.DIE_1)
+		elif BossHealth < health_lower_limit: # 看上去和外层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
+			call_deferred("change_state", State.HURT)
 
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
@@ -363,21 +373,7 @@ func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	deal_damage(1000, 750, area)
 	deal_damage(750, 500, area)
 	deal_damage(500, 250, area)
-	if BossHealth <= 250 and BossHealth >= 0:
-		if area.name == "Attack_1":
-			BossHealth -= 13
-		if area.name == "Attack_2":
-			BossHealth -= 13
-		if area.name == "Attack_Up":
-			BossHealth -= 13
-		if area.name == "Attack_Down":
-			BossHealth -= 13
-		if area.name == "HeiboHitboxArea":
-			BossHealth -= 30
-		if area.name == "ShanghouHitboxArea":
-			BossHealth -= 20
-		if BossHealth <= 0:
-			call_deferred("change_state", State.DIE_1)
+	deal_damage(250, 0, area)
 	print(BossHealth)
 
 
