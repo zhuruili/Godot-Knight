@@ -27,3 +27,11 @@ func spawn_shanghou():
 	shanghou_node.position.x = player.position.x
 	shanghou_node.position.y = player.position.y
 	add_child(shanghou_node)
+
+func spawn_xiaza():
+	var player = get_node("/root/MainScene/Player/Player")
+	var xiaza_scene = load("res://scenes/xiaza.tscn")
+	var xiaza_node = xiaza_scene.instantiate()
+	xiaza_node.position.x = player.position.x
+	xiaza_node.position.y = player.position.y
+	add_child(xiaza_node)
