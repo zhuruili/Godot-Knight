@@ -338,48 +338,31 @@ func door_open():
 	door.open()
 
 
+func deal_damage(health_upper_limit, health_lower_limit, area):
+	if BossHealth <= health_upper_limit and BossHealth >= health_lower_limit:
+		if area.name == "Attack_1":
+			BossHealth -= 13
+		if area.name == "Attack_2":
+			BossHealth -= 13
+		if area.name == "Attack_Up":
+			BossHealth -= 13
+		if area.name == "Attack_Down":
+			BossHealth -= 13
+		if area.name == "HeiboHitboxArea":
+			BossHealth -= 30
+		if area.name == "ShanghouHitboxArea":
+			BossHealth -= 20
+		if BossHealth < health_lower_limit: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
+			call_deferred("change_state", State.HURT)
+		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
+			call_deferred("change_state", State.DIE_1)
+
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
 	$SpriteArea/Sprite2D.use_parent_material = false
-	if BossHealth <= 1000 and BossHealth >= 750:
-		if area.name == "Attack_1":
-			BossHealth -= 13
-		if area.name == "Attack_2":
-			BossHealth -= 13
-		if area.name == "Attack_Up":
-			BossHealth -= 13
-		if area.name == "Attack_Down":
-			BossHealth -= 13
-		if BossHealth < 750: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
-			call_deferred("change_state", State.HURT)
-		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
-			call_deferred("change_state", State.DIE_1)
-	if BossHealth <= 750 and BossHealth >= 500:
-		if area.name == "Attack_1":
-			BossHealth -= 13
-		if area.name == "Attack_2":
-			BossHealth -= 13
-		if area.name == "Attack_Up":
-			BossHealth -= 13
-		if area.name == "Attack_Down":
-			BossHealth -= 13
-		if BossHealth < 500: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
-			call_deferred("change_state", State.HURT)
-		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
-			call_deferred("change_state", State.DIE_1)
-	if BossHealth <= 500 and BossHealth >= 250:
-		if area.name == "Attack_1":
-			BossHealth -= 13
-		if area.name == "Attack_2":
-			BossHealth -= 13
-		if area.name == "Attack_Up":
-			BossHealth -= 13
-		if area.name == "Attack_Down":
-			BossHealth -= 13
-		if BossHealth < 250: # 看上去和上层分支冲突，但是这里是连续的if，在突变的那一帧之内其实是可以触发的
-			call_deferred("change_state", State.HURT)
-		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
-			call_deferred("change_state", State.DIE_1)
+	deal_damage(1000, 750, area)
+	deal_damage(750, 500, area)
+	deal_damage(500, 250, area)
 	if BossHealth <= 250 and BossHealth >= 0:
 		if area.name == "Attack_1":
 			BossHealth -= 13
@@ -389,7 +372,11 @@ func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 			BossHealth -= 13
 		if area.name == "Attack_Down":
 			BossHealth -= 13
-		if BossHealth <= 0: # 理论上在内层不会发生，只是为了保险
+		if area.name == "HeiboHitboxArea":
+			BossHealth -= 30
+		if area.name == "ShanghouHitboxArea":
+			BossHealth -= 20
+		if BossHealth <= 0:
 			call_deferred("change_state", State.DIE_1)
 	print(BossHealth)
 

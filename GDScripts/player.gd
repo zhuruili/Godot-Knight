@@ -4,7 +4,7 @@ enum State {NORMAL, DASH,
 ATTACK, ATTACK_UP, ATTACK_DOWN, ATTACK_JUMP,
 HURT, DIE_1, DIE_2,
 HEAL,
-HEIBO, }
+HEIBO, SHANGHOU}
 
 var currentState = State.NORMAL
 var isStateNew = true
@@ -49,6 +49,8 @@ func _process(delta: float) -> void:
 			process_heal(delta)
 		State.HEIBO:
 			process_heibo(delta)
+		State.SHANGHOU:
+			process_shanghou(delta)
 	isStateNew = false
 
 func change_state(newState):
@@ -138,6 +140,8 @@ func process_normal(delta: float) -> void:
 		call_deferred("change_state", State.ATTACK_DOWN)
 	if Input.is_action_just_pressed("fashu") and $"/root/PlayerSoul".PlayerSoul >= 3:
 		call_deferred("change_state", State.HEIBO)
+	if Input.is_action_just_pressed("fashu") and Input.get_action_strength("move_up") and $"/root/PlayerSoul".PlayerSoul >= 3:
+		call_deferred("change_state", State.SHANGHOU)
 
 func process_dash(delta):
 	if isStateNew:
@@ -282,13 +286,27 @@ func process_heibo(delta):
 		call_deferred("change_state", State.NORMAL)
 
 func spawn_heibo(delta):
-	var heibo_spawner = get_node("/root/MainScene/Player/FashuSpawner")
+	var fashu_spawner = get_node("/root/MainScene/Player/FashuSpawner")
 	if $SpriteArea.scale.x == 1:
-		heibo_spawner.spawn_heibo_right()
+		fashu_spawner.spawn_heibo_right()
 		position.x -= 5
 	else:
-		heibo_spawner.spawn_heibo_left()
+		fashu_spawner.spawn_heibo_left()
 		position.x += 5
+
+func process_shanghou(delta):
+	if isStateNew:
+		$"/root/PlayerSoul".PlayerSoul -= 3
+		$"/root/PlayerSoul".refresh_player_soul()
+		turn_direction()
+		velocity = Vector2.ZERO
+		$AnimationPlayer.play("上吼")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.NORMAL)
+
+func spawn_shanghou(delta):
+	var fashu_spawner = get_node("/root/MainScene/Player/FashuSpawner")
+	fashu_spawner.spawn_shanghou()
 
 
 func _on_attack_1_area_entered(area: Area2D) -> void:
