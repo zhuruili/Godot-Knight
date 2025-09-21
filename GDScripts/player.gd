@@ -229,6 +229,7 @@ func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 		call_deferred("change_state", State.DIE_1)
 	else:
 		call_deferred("change_state", State.HURT)
+	pass
 
 func Invincible():
 	$HurtboxArea/Hurtbox.set_deferred("disabled", true)
@@ -355,32 +356,63 @@ func xiaza_wudi():
 	$XiazaWudiTimer.start()
 
 
-func _on_attack_1_area_entered(area: Area2D) -> void:
-	$"/root/PlayerSoul".PlayerSoul += 1
-	$"/root/PlayerSoul".refresh_player_soul()
-	if $SpriteArea.scale.x == 1:
-		global_position.x -= 5
+func pindao_wudi():
+	$HurtboxArea/Hurtbox.disabled = true
+	$PindaoWudiTimer.start()
+
+func pindao_detect_and_spawn(area):
+	if area.name == "DaoguangHitboxArea":
+		var pos1 = global_position
+		var pos2 = area.global_position
+		var effect_pos = (pos1 + pos2) / 2
+		$"/root/MainScene/Player/TexiaoSpawner".spawn_pindao_texiao(effect_pos)
+		$"/root/MainScene/GameCamera".pindao_camera()
+		call_deferred("pindao_wudi")
+		return true
 	else:
-		global_position.x += 5
+		return false
+
+func _on_attack_1_area_entered(area: Area2D) -> void:
+	if pindao_detect_and_spawn(area):
+		pass
+	else:
+		$"/root/PlayerSoul".PlayerSoul += 1
+		$"/root/PlayerSoul".refresh_player_soul()
+		if $SpriteArea.scale.x == 1:
+			global_position.x -= 5
+		else:
+			global_position.x += 5
 
 func _on_attack_2_area_entered(area: Area2D) -> void:
-	$"/root/PlayerSoul".PlayerSoul += 1
-	$"/root/PlayerSoul".refresh_player_soul()
-	if $SpriteArea.scale.x == 1:
-		global_position.x -= 5
+	if pindao_detect_and_spawn(area):
+		pass
 	else:
-		global_position.x += 5
+		$"/root/PlayerSoul".PlayerSoul += 1
+		$"/root/PlayerSoul".refresh_player_soul()
+		if $SpriteArea.scale.x == 1:
+			global_position.x -= 5
+		else:
+			global_position.x += 5
 
 func _on_attack_up_area_entered(area: Area2D) -> void:
-	$"/root/PlayerSoul".PlayerSoul += 1
-	$"/root/PlayerSoul".refresh_player_soul()
-	pass # Replace with function body.
+	if pindao_detect_and_spawn(area):
+		pass
+	else:
+		$"/root/PlayerSoul".PlayerSoul += 1
+		$"/root/PlayerSoul".refresh_player_soul()
 
 func _on_attack_down_area_entered(area: Area2D) -> void:
-	$"/root/PlayerSoul".PlayerSoul += 1
-	$"/root/PlayerSoul".refresh_player_soul()
+	if pindao_detect_and_spawn(area):
+		pass
+	else:
+		$"/root/PlayerSoul".PlayerSoul += 1
+		$"/root/PlayerSoul".refresh_player_soul()
 	call_deferred("change_state", State.ATTACK_JUMP)
 
 
 func _on_xiaza_wudi_timer_timeout() -> void:
+	$HurtboxArea/Hurtbox.disabled = false
+
+
+func _on_pindao_wudi_timer_timeout() -> void:
 	$HurtboxArea/Hurtbox.disabled = false
