@@ -52,3 +52,7 @@ func enemy_rigidity():
 func enemy_die():
 	shakeStrength = 10
 	start_timer(0.7)
+
+func pindao_camera():
+	shakeStrength = 1
+	start_timer(0.1)
