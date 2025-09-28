@@ -11,6 +11,14 @@ Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小�
 > Godot版本说明：原教程使用的是Godot3.3.3，这里我使用的版本是Godot4.4.1  
 > 游戏资源说明：由于我不是项目的原作者，制作游戏所用到的资源我不敢擅自搬运，如果你对此感兴趣可以查看文档底部的原教程链接获取制作游戏所需的资源
 
+---
+
+## 效果展示
+
+完全做完后会录个小视频在这里
+
+---
+
 ## 完成进度
 
 游戏制作过程中留下的简易笔记在`Docs`文件夹下，仅记录一些关键知识点
@@ -35,7 +43,10 @@ Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小�
 - [X] [Chapter18](Docs/Chapter18.md)：小骑士下砸
 - [X] [Chapter19](Docs/Chapter19.md)：震动与卡帧
 - [X] [Chapter20](Docs/Chapter20.md)：拼刀
+- [X] [Chapter21](Docs/Chapter21.md)：BOSS的战吼
 - [ ] 未完待续...
+
+---
 
 ## 参考资料
 

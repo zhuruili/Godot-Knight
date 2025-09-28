@@ -4,7 +4,8 @@ enum State {NORMAL, DASH,
 ATTACK, ATTACK_UP, ATTACK_DOWN, ATTACK_JUMP,
 HURT, DIE_1, DIE_2,
 HEAL,
-HEIBO, SHANGHOU, XIAZA_XULI, XIAZA_GUOCHENG, XIAZA_LUODI}
+HEIBO, SHANGHOU, XIAZA_XULI, XIAZA_GUOCHENG, XIAZA_LUODI,
+SCARED}
 
 var currentState = State.NORMAL
 var isStateNew = true
@@ -29,6 +30,8 @@ func _process(delta: float) -> void:
 	match currentState:
 		State.NORMAL:
 			process_normal(delta)
+		State.SCARED:
+			process_scared(delta)
 		State.DASH:
 			process_dash(delta)
 		State.ATTACK:
@@ -108,6 +111,19 @@ func apply_gravity_movement(delta):
 		velocity.x = lerp(0.0, velocity.x, pow(2, -50 * delta))
 	velocity.y += gravity * delta
 	move_and_slide()
+
+func player_change_state_to_scared():
+	call_deferred("change_state", State.SCARED)
+
+func process_scared(delta):
+	if isStateNew:
+		$AnimationPlayer.play("抬头")
+		velocity.x = 150
+	velocity.x = lerp(0.0, velocity.x, pow(2, -10 * delta))
+	velocity.y += gravity * delta
+	move_and_slide()
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.NORMAL)
 
 func process_normal(delta: float) -> void:
 	var moveVector = get_movement_vector()
@@ -365,7 +381,7 @@ func pindao_detect_and_spawn(area):
 		var pos1 = global_position
 		var pos2 = area.global_position
 		var effect_pos = (pos1 + pos2) / 2
-		$"/root/MainScene/Player/TexiaoSpawner".spawn_pindao_texiao(effect_pos)
+		$"/root/MainScene/TexiaoSpawner".spawn_pindao_texiao(effect_pos)
 		$"/root/MainScene/GameCamera".pindao_camera()
 		call_deferred("pindao_wudi")
 		return true

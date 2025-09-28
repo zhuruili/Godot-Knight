@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-enum State {READY, IDLE,
+enum State {READY, READY_2, ZHANHOU_ZHUNBEI, ZHANHOU, IDLE,
 			HUIKAN, HUIKAN_ZHUNBEI, SHANGTIAO, SHANGTIAO_ZHUNBEI,
 			MOVE, JUMP, FALL,
 			JUMP_2, XIACHUO_ZHUNBEI, XIACHUO, XIACHUO_JIESHU,
@@ -18,7 +18,7 @@ var BossHealth = 1000
 
 func _ready() -> void:
 	global_position.x = -450
-	global_position.y = 0
+	global_position.y = -180
 	$HurtboxArea/Hurtbox.disabled = false
 	$BodyHitboxArea/BodyHitbox.disabled = false
 	$DaoguangHitboxArea/DaoguangHitbox.disabled = false
@@ -28,6 +28,12 @@ func _process(delta: float) -> void:
 	match currentState:
 		State.READY:
 			process_ready(delta)
+		State.READY_2:
+			process_ready_2(delta)
+		State.ZHANHOU_ZHUNBEI:
+			process_zhanhou_zhunbei(delta)
+		State.ZHANHOU:
+			process_zhanhou(delta)
 		State.IDLE:
 			process_idle(delta)
 		State.HUIKAN:
@@ -90,12 +96,41 @@ func match_player_position():
 		playerPosition = player.global_position
 
 func process_ready(delta):
-	turn_direction()
+	if isStateNew:
+		turn_direction()
 	$AnimationPlayer.play("站立")
 	if playerPosition.x < -250:
 		var door = get_node("/root/MainScene/Doors/Door")
 		door.close()
+		call_deferred("change_state", State.READY_2)
+
+func process_ready_2(delta):
+	if isStateNew:
+		$AnimationPlayer.play("下落")
+	velocity.y += gravity * delta
+	move_and_slide()
+	if is_on_floor():
+		velocity = Vector2.ZERO
+		call_deferred("change_state", State.ZHANHOU_ZHUNBEI)
+
+func process_zhanhou_zhunbei(delta):
+	if isStateNew:
+		$AnimationPlayer.play("战吼准备")
+	if !$AnimationPlayer.is_playing():
+		call_deferred("change_state", State.ZHANHOU)
+
+func process_zhanhou(delta):
+	$"/root/MainScene/GameCamera".zhanhou_camera()
+	if isStateNew:
+		var boss_pos = position
+		$"/root/MainScene/TexiaoSpawner".spawn_zhanhou_texiao(boss_pos)
+		var player = get_node("/root/MainScene/Player/Player")
+		player.player_change_state_to_scared()
+		$AnimationPlayer.play("战吼")
+	if !$AnimationPlayer.is_playing():
+		$"/root/MainScene/TexiaoSpawner".delete_zhanhou()
 		call_deferred("change_state", State.IDLE)
+
 
 func process_idle(delta):
 	turn_direction()
