@@ -405,6 +405,8 @@ func deal_damage(health_upper_limit, health_lower_limit, area):
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
 	$SpriteArea/Sprite2D.use_parent_material = false
+	var boss_pos = position
+	$"/root/MainScene/TexiaoSpawner".spawn_hit_particle(boss_pos)
 	deal_damage(1000, 750, area)
 	deal_damage(750, 500, area)
 	deal_damage(500, 250, area)

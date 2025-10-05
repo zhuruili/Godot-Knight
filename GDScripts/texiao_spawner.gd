@@ -15,3 +15,9 @@ func spawn_zhanhou_texiao(boss_pos):
 func delete_zhanhou():
 	var zhanhou_node = get_node("/root/MainScene/TexiaoSpawner/ZhanhouTexiao")
 	zhanhou_node.queue_free()
+
+func spawn_hit_particle(boss_pos):
+	var particle = load("res://scenes/hit_particle.tscn")
+	var particle_node = particle.instantiate()
+	particle_node.position = boss_pos
+	add_child(particle_node)

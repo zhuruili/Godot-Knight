@@ -44,6 +44,7 @@ Godot-Knight 是一款基于`Godot`游戏引擎仿制空洞骑士BOSS战的小�
 - [X] [Chapter19](Docs/Chapter19.md)：震动与卡帧
 - [X] [Chapter20](Docs/Chapter20.md)：拼刀
 - [X] [Chapter21](Docs/Chapter21.md)：BOSS的战吼
+- [ ] [Chapter22](Docs/Chapter22.md)：粒子特效
 - [ ] 未完待续...
 
 ---
