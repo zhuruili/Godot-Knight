@@ -7,4 +7,5 @@ func open():
 	$AnimationPlayer.play("open")
 	
 func close():
+	$"/root/MusicManager".play_music()
 	$AnimationPlayer.play("close")

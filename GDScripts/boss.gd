@@ -218,6 +218,7 @@ func process_fall(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if is_on_floor():
+		$AudioStreamPlayer_Fall.play()
 		velocity = Vector2.ZERO
 		call_deferred("change_state", State.IDLE)
 
@@ -288,6 +289,7 @@ func process_back_fall(delta):
 	velocity.y += gravity * delta
 	move_and_slide()
 	if is_on_floor():
+		$AudioStreamPlayer_Fall.play()
 		velocity = Vector2.ZERO
 		if randf() > 0.5:
 			call_deferred("change_state", State.BAIBO)
@@ -342,6 +344,7 @@ func process_chongci_tingxia(delta):
 
 func process_hurt(delta):
 	if isStateNew:
+		$AudioStreamPlayer_EnemyJiangzhi.play()
 		$"/root/MainScene/GameCamera".enemy_rigidity()
 		turn_direction()
 		$AnimationPlayer.play("僵直")
@@ -354,6 +357,7 @@ func process_hurt(delta):
 
 func process_die_1(delta):
 	if isStateNew:
+		$AudioStreamPlayer_EnemyDie.play()
 		$"/root/MainScene/GameCamera".enemy_rigidity()
 		$HurtboxArea/Hurtbox.disabled = true
 		$BodyHitboxArea/BodyHitbox.disabled = true
@@ -404,6 +408,7 @@ func deal_damage(health_upper_limit, health_lower_limit, area):
 
 func _on_hurtbox_area_area_entered(area: Area2D) -> void:
 	$MateriaTimer.start()
+	$AudioStreamPlayer_EnemyHurt.play()
 	$SpriteArea/Sprite2D.use_parent_material = false
 	var boss_pos = position
 	$"/root/MainScene/TexiaoSpawner".spawn_hit_particle(boss_pos)

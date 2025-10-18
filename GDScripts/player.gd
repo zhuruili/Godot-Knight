@@ -383,6 +383,10 @@ func pindao_detect_and_spawn(area):
 		var effect_pos = (pos1 + pos2) / 2
 		$"/root/MainScene/TexiaoSpawner".spawn_pindao_texiao(effect_pos)
 		$"/root/MainScene/GameCamera".pindao_camera()
+		if randf() > 0.5:
+			$AudioStreamPlayer_Pindao.play()
+		else:
+			$AudioStreamPlayer_Pindao2.play()
 		call_deferred("pindao_wudi")
 		return true
 	else:
